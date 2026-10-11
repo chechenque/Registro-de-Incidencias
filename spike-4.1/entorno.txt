@@ -1,0 +1,2 @@
+Python 3.12.14
+2026-10-10T22:29:01.132975 iMac-de-Luis-Angel.local macOS-26.6.2-arm64-arm-64bit
