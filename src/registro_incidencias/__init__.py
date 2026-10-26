@@ -27,7 +27,12 @@ def create_app(test_config: dict | None = None) -> Flask:
     login_manager.init_app(app)
     csrf.init_app(app)
 
-    login_manager.login_view = "main.index"
+    with app.app_context():
+        from registro_incidencias import models
+
+        db.create_all()
+
+    login_manager.login_view = "main.login"
     login_manager.login_message = "Inicia sesión para acceder a esta sección."
 
     from registro_incidencias.routes import main

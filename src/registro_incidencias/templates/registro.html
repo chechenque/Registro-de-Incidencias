@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+
+{% block title %}Crear cuenta | Registro de incidencias{% endblock %}
+
+{% block content %}
+<section class="hero">
+    <h1>Crear cuenta</h1>
+    <p>Regístrate para reportar y dar seguimiento a incidencias.</p>
+
+    <form method="post">
+        {{ form.hidden_tag() }}
+
+        <div class="form-group">
+            {{ form.nombre.label }}
+            {{ form.nombre(autocomplete="name", required=true) }}
+            {% for error in form.nombre.errors %}
+                <p class="field-error">{{ error }}</p>
+            {% endfor %}
+        </div>
+
+        <div class="form-group">
+            {{ form.correo.label }}
+            {{ form.correo(type="email", autocomplete="email", required=true) }}
+            {% for error in form.correo.errors %}
+                <p class="field-error">{{ error }}</p>
+            {% endfor %}
+        </div>
+
+        <div class="form-group">
+            {{ form.password.label }}
+            {{ form.password(autocomplete="new-password", required=true) }}
+            {% for error in form.password.errors %}
+                <p class="field-error">{{ error }}</p>
+            {% endfor %}
+        </div>
+
+        <div class="form-group">
+            {{ form.confirmar_password.label }}
+            {{ form.confirmar_password(autocomplete="new-password", required=true) }}
+            {% for error in form.confirmar_password.errors %}
+                <p class="field-error">{{ error }}</p>
+            {% endfor %}
+        </div>
+
+        {{ form.submit(class="button") }}
+    </form>
+
+    <p>¿Ya tienes cuenta? <a href="{{ url_for('main.login') }}">Inicia sesión</a>.</p>
+</section>
+{% endblock %}

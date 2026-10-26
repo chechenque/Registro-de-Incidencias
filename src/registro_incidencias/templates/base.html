@@ -12,16 +12,48 @@
 <body>
     <header class="site-header">
         <div class="container">
-            <a class="brand" href="{{ url_for('main.index') }}">
-                Registro de incidencias
-            </a>
+            <div class="header-content">
+                <a class="brand" href="{{ url_for('main.index') }}">
+                    Registro de incidencias
+                </a>
+
+                <nav aria-label="Navegación principal">
+                    {% if current_user.is_authenticated %}
+                        <span>{{ current_user.nombre }}</span>
+
+                        <form
+                            method="post"
+                            action="{{ url_for('main.logout') }}"
+                            class="inline-form"
+                        >
+                            <input
+                                type="hidden"
+                                name="csrf_token"
+                                value="{{ csrf_token() }}"
+                            >
+                            <button type="submit" class="nav-button">
+                                Cerrar sesión
+                            </button>
+                        </form>
+                    {% else %}
+                        <a href="{{ url_for('main.login') }}">
+                            Iniciar sesión
+                        </a>
+                        <a href="{{ url_for('main.registro') }}">
+                            Crear cuenta
+                        </a>
+                    {% endif %}
+                </nav>
+            </div>
         </div>
     </header>
 
     <main class="container">
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% for category, message in messages %}
-                <div class="notice notice-{{ category }}">{{ message }}</div>
+                <div class="notice notice-{{ category }}">
+                    {{ message }}
+                </div>
             {% endfor %}
         {% endwith %}
 
