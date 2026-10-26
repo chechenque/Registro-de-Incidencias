@@ -45,3 +45,25 @@ registro, el seguimiento y la seguridad de las incidencias.
 
 No sustituyen la evidencia directa del problema en el contexto de uso.
 Esa validación permanece pendiente hasta recabar información real.
+
+## Fuente 4. OWASP — Cross-Site Request Forgery Prevention Cheat Sheet
+
+- URL: https://cheatsheetseries.owasp.org/cheatsheets/Cross-Site_Request_Forgery_Prevention_Cheat_Sheet.html
+- Tipo: guía técnica de seguridad de OWASP.
+- Aporte: explica las defensas contra ataques CSRF y el uso de tokens
+  de protección en solicitudes que modifican el estado.
+- Aplicación al proyecto: orienta la protección de los formularios para
+  crear incidencias y agregar comentarios.
+- Limitación: las recomendaciones deben implementarse y probarse; citar
+  la guía no demuestra que la aplicación sea segura.
+
+## Fuente 5. Flask — Web Security
+
+- URL: https://flask.palletsprojects.com/en/stable/web-security/
+- Tipo: documentación oficial de Flask.
+- Aporte: presenta consideraciones de seguridad relacionadas con
+  aplicaciones web, cookies, encabezados y contenido generado.
+- Aplicación al proyecto: orienta las decisiones de seguridad durante
+  la implementación de la aplicación.
+- Limitación: la documentación general no sustituye una revisión de
+  seguridad ni las pruebas específicas de la aplicación.
