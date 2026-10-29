@@ -6,6 +6,8 @@ from wtforms.validators import (
     EqualTo,
     Length,
 )
+from wtforms import SelectField, TextAreaField
+from wtforms.validators import Length
 
 
 class RegistroForm(FlaskForm):
@@ -41,3 +43,57 @@ class LoginForm(FlaskForm):
         validators=[DataRequired(), Length(min=12, max=128)],
     )
     submit = SubmitField("Iniciar sesión")
+
+
+class IncidenciaForm(FlaskForm):
+    titulo = StringField(
+        "Título",
+        validators=[
+            DataRequired(),
+            Length(min=5, max=160),
+        ],
+    )
+    descripcion = TextAreaField(
+        "Descripción",
+        validators=[
+            DataRequired(),
+            Length(min=10, max=5000),
+        ],
+    )
+    prioridad = SelectField(
+        "Prioridad",
+        choices=[
+            ("baja", "Baja"),
+            ("media", "Media"),
+            ("alta", "Alta"),
+            ("critica", "Crítica"),
+        ],
+        default="media",
+        validators=[DataRequired()],
+    )
+    submit = SubmitField("Registrar incidencia")
+
+
+class ComentarioForm(FlaskForm):
+    contenido = TextAreaField(
+        "Comentario",
+        validators=[
+            DataRequired(),
+            Length(min=2, max=3000),
+        ],
+    )
+    submit = SubmitField("Agregar comentario")
+
+
+class EstadoIncidenciaForm(FlaskForm):
+    estado = SelectField(
+        "Estado",
+        choices=[
+            ("abierta", "Abierta"),
+            ("en_proceso", "En proceso"),
+            ("resuelta", "Resuelta"),
+            ("cerrada", "Cerrada"),
+        ],
+        validators=[DataRequired()],
+    )
+    submit = SubmitField("Actualizar estado")

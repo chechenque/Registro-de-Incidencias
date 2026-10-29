@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+
+{% block title %}Incidencias | Registro de incidencias{% endblock %}
+
+{% block content %}
+<section class="hero">
+    <h1>Incidencias</h1>
+    <p>
+        {% if current_user.es_administrador() %}
+            Consulta las incidencias registradas por todos los usuarios.
+        {% else %}
+            Consulta y da seguimiento a tus incidencias.
+        {% endif %}
+    </p>
+
+    <a class="button" href="{{ url_for('main.nueva_incidencia') }}">
+        Registrar incidencia
+    </a>
+</section>
+
+<section class="incident-list">
+    {% if incidencias %}
+        {% for incidencia in incidencias %}
+            <article class="incident-card">
+                <div>
+                    <h2>
+                        <a href="{{ url_for(
+                            'main.detalle_incidencia',
+                            incidencia_id=incidencia.id
+                        ) }}">
+                            {{ incidencia.titulo }}
+                        </a>
+                    </h2>
+
+                    <p>{{ incidencia.descripcion | truncate(180) }}</p>
+
+                    <p>
+                        <strong>Estado:</strong>
+                        {{ incidencia.estado | replace("_", " ") | title }}
+                    </p>
+
+                    <p>
+                        <strong>Prioridad:</strong>
+                        {{ incidencia.prioridad | title }}
+                    </p>
+
+                    {% if current_user.es_administrador() %}
+                        <p>
+                            <strong>Reportante:</strong>
+                            {{ incidencia.reportante.nombre }}
+                        </p>
+                    {% endif %}
+                </div>
+            </article>
+        {% endfor %}
+    {% else %}
+        <p class="empty-state">
+            Todavía no hay incidencias registradas.
+        </p>
+    {% endif %}
+</section>
+{% endblock %}

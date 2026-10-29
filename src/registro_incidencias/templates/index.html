@@ -10,6 +10,36 @@
         Registra reportes, consulta su estado y conserva el historial
         de seguimiento en un solo lugar.
     </p>
-    <p class="status">Proyecto en desarrollo</p>
+
+    {% if current_user.is_authenticated %}
+        <p class="status">
+            Bienvenido, {{ current_user.nombre }}.
+        </p>
+
+        <p>
+            <a class="button" href="{{ url_for('main.listar_incidencias') }}">
+                Consultar incidencias
+            </a>
+        </p>
+
+        <p>
+            <a href="{{ url_for('main.nueva_incidencia') }}">
+                Registrar una nueva incidencia
+            </a>
+        </p>
+    {% else %}
+        <p class="status">Proyecto en desarrollo</p>
+
+        <p>
+            <a class="button" href="{{ url_for('main.login') }}">
+                Iniciar sesión
+            </a>
+        </p>
+
+        <p>
+            ¿No tienes cuenta?
+            <a href="{{ url_for('main.registro') }}">Crear cuenta</a>
+        </p>
+    {% endif %}
 </section>
 {% endblock %}

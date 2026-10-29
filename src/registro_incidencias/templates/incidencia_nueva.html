@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+
+{% block title %}Nueva incidencia | Registro de incidencias{% endblock %}
+
+{% block content %}
+<section class="hero">
+    <h1>Registrar incidencia</h1>
+    <p>Describe el problema para facilitar su atención y seguimiento.</p>
+
+    <form method="post">
+        {{ form.hidden_tag() }}
+
+        <div class="form-group">
+            {{ form.titulo.label }}
+            {{ form.titulo(
+                maxlength="160",
+                required=true,
+                placeholder="Ej. No puedo acceder al sistema"
+            ) }}
+            {% for error in form.titulo.errors %}
+                <p class="field-error">{{ error }}</p>
+            {% endfor %}
+        </div>
+
+        <div class="form-group">
+            {{ form.descripcion.label }}
+            {{ form.descripcion(
+                rows="6",
+                maxlength="5000",
+                required=true,
+                placeholder="Explica qué ocurrió y qué resultado esperabas."
+            ) }}
+            {% for error in form.descripcion.errors %}
+                <p class="field-error">{{ error }}</p>
+            {% endfor %}
+        </div>
+
+        <div class="form-group">
+            {{ form.prioridad.label }}
+            {{ form.prioridad(required=true) }}
+            {% for error in form.prioridad.errors %}
+                <p class="field-error">{{ error }}</p>
+            {% endfor %}
+        </div>
+
+        {{ form.submit(class="button") }}
+
+        <a href="{{ url_for('main.listar_incidencias') }}">
+            Cancelar
+        </a>
+    </form>
+</section>
+{% endblock %}

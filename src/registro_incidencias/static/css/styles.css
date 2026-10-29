@@ -154,3 +154,55 @@ h1 {
         flex-direction: column;
     }
 }
+
+.incident-list {
+    display: grid;
+    gap: 1rem;
+    margin: 2rem 0;
+}
+
+.incident-card {
+    padding: 1.25rem;
+    margin: 1rem 0;
+    border: 1px solid #dbe3ef;
+    border-radius: 0.6rem;
+    background: white;
+    overflow-wrap: anywhere;
+}
+
+.incident-card h2 {
+    margin-top: 0;
+}
+
+.incident-card a {
+    color: #234f87;
+}
+
+.empty-state {
+    padding: 1.5rem;
+    border: 1px dashed #94a3b8;
+    border-radius: 0.6rem;
+    text-align: center;
+}
+
+textarea,
+select {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #cbd5e1;
+    border-radius: 0.4rem;
+    font: inherit;
+}
+
+textarea {
+    resize: vertical;
+}
+
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+    outline: 3px solid #93c5fd;
+    outline-offset: 2px;
+}

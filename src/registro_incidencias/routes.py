@@ -1,10 +1,29 @@
-from flask import Blueprint, flash, redirect, render_template, url_for
-from flask_login import current_user, login_required, login_user, logout_user
+from flask import (
+    Blueprint,
+    abort,
+    flash,
+    redirect,
+    render_template,
+    request,
+    url_for,
+)
+from flask_login import (
+    current_user,
+    login_required,
+    login_user,
+    logout_user,
+)
 from sqlalchemy import select
 
 from registro_incidencias.extensions import db
-from registro_incidencias.forms import LoginForm, RegistroForm
-from registro_incidencias.models import Usuario
+from registro_incidencias.forms import (
+    ComentarioForm,
+    EstadoIncidenciaForm,
+    IncidenciaForm,
+    LoginForm,
+    RegistroForm,
+)
+from registro_incidencias.models import Comentario, Incidencia, Usuario
 
 main = Blueprint("main", __name__)
 
@@ -79,3 +98,138 @@ def logout():
     logout_user()
     flash("Has cerrado sesión.", "success")
     return redirect(url_for("main.index"))
+
+
+@main.get("/incidencias")
+@login_required
+def listar_incidencias():
+    consulta = select(Incidencia).order_by(
+        Incidencia.fecha_actualizacion.desc()
+    )
+
+    if not current_user.es_administrador():
+        consulta = consulta.where(
+            Incidencia.reportante_id == current_user.id
+        )
+
+    incidencias = db.session.scalars(consulta).all()
+
+    return render_template(
+        "incidencias.html",
+        incidencias=incidencias,
+    )
+
+
+@main.route("/incidencias/nueva", methods=["GET", "POST"])
+@login_required
+def nueva_incidencia():
+    form = IncidenciaForm()
+
+    if form.validate_on_submit():
+        incidencia = Incidencia(
+            titulo=form.titulo.data.strip(),
+            descripcion=form.descripcion.data.strip(),
+            prioridad=form.prioridad.data,
+            estado="abierta",
+            reportante_id=current_user.id,
+        )
+
+        db.session.add(incidencia)
+        db.session.commit()
+
+        flash("La incidencia se registró correctamente.", "success")
+        return redirect(
+            url_for("main.detalle_incidencia", incidencia_id=incidencia.id)
+        )
+
+    return render_template("incidencia_nueva.html", form=form)
+
+
+def obtener_incidencia_autorizada(incidencia_id: int) -> Incidencia:
+    incidencia = db.session.get(Incidencia, incidencia_id)
+
+    if incidencia is None:
+        abort(404)
+
+    if (
+        not current_user.es_administrador()
+        and incidencia.reportante_id != current_user.id
+    ):
+        abort(403)
+
+    return incidencia
+
+
+@main.route("/incidencias/<int:incidencia_id>", methods=["GET", "POST"])
+@login_required
+def detalle_incidencia(incidencia_id: int):
+    incidencia = obtener_incidencia_autorizada(incidencia_id)
+
+    comentario_form = ComentarioForm()
+    estado_form = EstadoIncidenciaForm()
+
+    if request.method == "POST":
+        if request.form.get("accion") != "comentario":
+            abort(400)
+
+        if comentario_form.validate_on_submit():
+            comentario = Comentario(
+                contenido=comentario_form.contenido.data.strip(),
+                incidencia_id=incidencia.id,
+                autor_id=current_user.id,
+            )
+
+            db.session.add(comentario)
+            db.session.commit()
+
+            flash("El comentario se agregó correctamente.", "success")
+            return redirect(
+                url_for(
+                    "main.detalle_incidencia",
+                    incidencia_id=incidencia.id,
+                )
+            )
+
+    return render_template(
+        "incidencia_detalle.html",
+        incidencia=incidencia,
+        comentario_form=comentario_form,
+        estado_form=estado_form,
+    )
+
+
+def request_es_actualizacion_estado() -> bool:
+    from flask import request
+
+    return (
+        request.method == "POST"
+        and request.form.get("accion") == "actualizar_estado"
+    )
+
+
+@main.post("/incidencias/<int:incidencia_id>/estado")
+@login_required
+def actualizar_estado_incidencia(incidencia_id: int):
+    if not current_user.es_administrador():
+        abort(403)
+
+    incidencia = db.session.get(Incidencia, incidencia_id)
+
+    if incidencia is None:
+        abort(404)
+
+    form = EstadoIncidenciaForm()
+
+    if form.validate_on_submit():
+        incidencia.estado = form.estado.data
+        db.session.commit()
+
+        flash("El estado de la incidencia se actualizó correctamente.", "success")
+        return redirect(
+            url_for("main.detalle_incidencia", incidencia_id=incidencia.id)
+        )
+
+    flash("No se pudo actualizar el estado.", "error")
+    return redirect(
+        url_for("main.detalle_incidencia", incidencia_id=incidencia.id)
+    )
