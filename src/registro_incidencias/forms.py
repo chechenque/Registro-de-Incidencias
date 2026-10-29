@@ -8,6 +8,7 @@ from wtforms.validators import (
 )
 from wtforms import SelectField, TextAreaField
 from wtforms.validators import Length
+from wtforms.fields import SelectChoice
 
 
 class RegistroForm(FlaskForm):
@@ -63,10 +64,10 @@ class IncidenciaForm(FlaskForm):
     prioridad = SelectField(
         "Prioridad",
         choices=[
-            ("baja", "Baja"),
-            ("media", "Media"),
-            ("alta", "Alta"),
-            ("critica", "Crítica"),
+            SelectChoice("baja", "Baja"),
+            SelectChoice("media", "Media"),
+            SelectChoice("alta", "Alta"),
+            SelectChoice("critica", "Crítica"),
         ],
         default="media",
         validators=[DataRequired()],
@@ -89,10 +90,10 @@ class EstadoIncidenciaForm(FlaskForm):
     estado = SelectField(
         "Estado",
         choices=[
-            ("abierta", "Abierta"),
-            ("en_proceso", "En proceso"),
-            ("resuelta", "Resuelta"),
-            ("cerrada", "Cerrada"),
+            SelectChoice("abierta", "Abierta"),
+            SelectChoice("en_proceso", "En proceso"),
+            SelectChoice("resuelta", "Resuelta"),
+            SelectChoice("cerrada", "Cerrada"),
         ],
         validators=[DataRequired()],
     )

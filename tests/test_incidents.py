@@ -259,3 +259,98 @@ def test_incident_comment_and_admin_status_update():
 
         assert incidencia is not None
         assert incidencia.estado == "resuelta"
+
+def test_incident_rejects_invalid_priority():
+    app = create_test_app()
+    create_user(app, "Ana Pérez", "ana@example.com")
+
+    client = app.test_client()
+    login(client, "ana@example.com")
+
+    response = client.post(
+        "/incidencias/nueva",
+        data={
+            "titulo": "Error de acceso al sistema",
+            "descripcion": (
+                "El sistema rechaza mis credenciales "
+                "aunque son correctas."
+            ),
+            "prioridad": "superadmin",
+            "submit": "Registrar incidencia",
+        },
+    )
+
+    assert response.status_code == 200
+
+    with app.app_context():
+        incidencias = db.session.scalars(
+            db.select(Incidencia)
+        ).all()
+
+        assert len(incidencias) == 0
+
+def test_admin_cannot_assign_invalid_incident_status():
+    app = create_test_app()
+
+    ana_id = create_user(app, "Ana Pérez", "ana@example.com")
+    create_user(
+        app,
+        "Administrador",
+        "admin@example.com",
+        rol="administrador",
+    )
+
+    incidencia_id = create_incident(
+        app,
+        ana_id,
+        "Incidencia de prueba",
+    )
+
+    client = app.test_client()
+    login(client, "admin@example.com")
+
+    response = client.post(
+        f"/incidencias/{incidencia_id}/estado",
+        data={
+            "estado": "eliminada",
+            "submit": "Actualizar estado",
+        },
+    )
+
+    assert response.status_code == 302
+
+    with app.app_context():
+        incidencia = db.session.get(Incidencia, incidencia_id)
+
+        assert incidencia is not None
+        assert incidencia.estado == "abierta"
+
+def test_registration_cannot_assign_administrator_role():
+    app = create_test_app()
+    client = app.test_client()
+
+    response = client.post(
+        "/registro",
+        data={
+            "nombre": "Usuario de prueba",
+            "correo": "usuario@example.com",
+            "password": "ClaveSegura123!",
+            "confirmar_password": "ClaveSegura123!",
+            "rol": "administrador",
+            "submit": "Crear cuenta",
+        },
+        follow_redirects=True,
+    )
+
+    assert response.status_code == 200
+
+    with app.app_context():
+        usuario = db.session.scalar(
+            db.select(Usuario).where(
+                Usuario.correo == "usuario@example.com"
+            )
+        )
+
+        assert usuario is not None
+        assert usuario.rol == "reportante"
+        assert not usuario.es_administrador()
