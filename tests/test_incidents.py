@@ -354,3 +354,18 @@ def test_registration_cannot_assign_administrator_role():
         assert usuario is not None
         assert usuario.rol == "reportante"
         assert not usuario.es_administrador()
+
+def test_incident_routes_require_authentication():
+    app = create_test_app()
+    client = app.test_client()
+
+    responses = [
+        client.get("/incidencias"),
+        client.get("/incidencias/nueva"),
+        client.get("/incidencias/1"),
+        client.post("/incidencias/1/estado"),
+    ]
+
+    for response in responses:
+        assert response.status_code == 302
+        assert "/login" in response.headers["Location"]
