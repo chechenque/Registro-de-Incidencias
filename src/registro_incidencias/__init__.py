@@ -3,6 +3,7 @@ from pathlib import Path
 
 from flask import Flask
 
+from registro_incidencias.commands import crear_administrador
 from registro_incidencias.extensions import csrf, db, login_manager
 
 
@@ -38,5 +39,7 @@ def create_app(test_config: dict | None = None) -> Flask:
     from registro_incidencias.routes import main
 
     app.register_blueprint(main)
+
+    app.cli.add_command(crear_administrador)
 
     return app

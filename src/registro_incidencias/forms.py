@@ -1,14 +1,14 @@
 from flask_wtf import FlaskForm
 from wtforms import PasswordField, StringField, SubmitField
+from wtforms import SelectField, TextAreaField
+from wtforms.fields import SelectChoice
 from wtforms.validators import (
     DataRequired,
     Email,
     EqualTo,
     Length,
 )
-from wtforms import SelectField, TextAreaField
 from wtforms.validators import Length
-from wtforms.fields import SelectChoice
 
 
 class RegistroForm(FlaskForm):

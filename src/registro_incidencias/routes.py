@@ -1,12 +1,13 @@
 from flask import (
     Blueprint,
-    abort,
     flash,
     redirect,
     render_template,
     request,
     url_for,
 )
+from flask import abort
+from flask_login import current_user, login_required
 from flask_login import (
     current_user,
     login_required,
@@ -197,16 +198,6 @@ def detalle_incidencia(incidencia_id: int):
         estado_form=estado_form,
     )
 
-
-def request_es_actualizacion_estado() -> bool:
-    from flask import request
-
-    return (
-        request.method == "POST"
-        and request.form.get("accion") == "actualizar_estado"
-    )
-
-
 @main.post("/incidencias/<int:incidencia_id>/estado")
 @login_required
 def actualizar_estado_incidencia(incidencia_id: int):
@@ -232,4 +223,44 @@ def actualizar_estado_incidencia(incidencia_id: int):
     flash("No se pudo actualizar el estado.", "error")
     return redirect(
         url_for("main.detalle_incidencia", incidencia_id=incidencia.id)
+    )
+
+@main.route("/administracion")
+@login_required
+def panel_administracion():
+    """Muestra el panel de control exclusivo para administradores."""
+
+    if not current_user.es_administrador():
+        abort(403)
+
+    incidencias = (
+        Incidencia.query
+        .order_by(Incidencia.fecha_creacion.desc())
+        .all()
+    )
+
+    resumen = {
+        "total": len(incidencias),
+        "abiertas": sum(
+            incidencia.estado == "abierta"
+            for incidencia in incidencias
+        ),
+        "en_proceso": sum(
+            incidencia.estado == "en_proceso"
+            for incidencia in incidencias
+        ),
+        "resueltas": sum(
+            incidencia.estado == "resuelta"
+            for incidencia in incidencias
+        ),
+        "cerradas": sum(
+            incidencia.estado == "cerrada"
+            for incidencia in incidencias
+        ),
+    }
+
+    return render_template(
+        "administracion.html",
+        incidencias=incidencias,
+        resumen=resumen,
     )

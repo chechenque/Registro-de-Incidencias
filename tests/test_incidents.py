@@ -369,3 +369,121 @@ def test_incident_routes_require_authentication():
     for response in responses:
         assert response.status_code == 302
         assert "/login" in response.headers["Location"]
+
+def test_administrator_can_access_admin_panel():
+    app = create_test_app()
+
+    ana_id = create_user(app, "Ana Pérez", "ana@example.com")
+    create_user(
+        app,
+        "Administrador",
+        "admin@example.com",
+        rol="administrador",
+    )
+
+    create_incident(app, ana_id, "Error de conexión")
+    create_incident(app, ana_id, "Problema de acceso")
+
+    client = app.test_client()
+    login(client, "admin@example.com")
+
+    response = client.get("/administracion")
+
+    assert response.status_code == 200
+    assert b"Panel de administraci" in response.data
+    assert b"Error de conexi" in response.data
+    assert b"Problema de acceso" in response.data
+    assert b"Ana P" in response.data
+
+
+def test_reporter_cannot_access_admin_panel():
+    app = create_test_app()
+
+    create_user(app, "Ana Pérez", "ana@example.com")
+
+    client = app.test_client()
+    login(client, "ana@example.com")
+
+    response = client.get("/administracion")
+
+    assert response.status_code == 403
+
+
+def test_admin_panel_requires_authentication():
+    app = create_test_app()
+    client = app.test_client()
+
+    response = client.get("/administracion")
+
+    assert response.status_code == 302
+    assert "/login" in response.headers["Location"]
+
+
+def test_admin_panel_displays_correct_incident_summary():
+    app = create_test_app()
+
+    ana_id = create_user(app, "Ana Pérez", "ana@example.com")
+    create_user(
+        app,
+        "Administrador",
+        "admin@example.com",
+        rol="administrador",
+    )
+
+    incidencia_abierta = create_incident(
+        app,
+        ana_id,
+        "Incidencia abierta",
+    )
+
+    incidencia_proceso = create_incident(
+        app,
+        ana_id,
+        "Incidencia en proceso",
+    )
+
+    incidencia_resuelta = create_incident(
+        app,
+        ana_id,
+        "Incidencia resuelta",
+    )
+
+    incidencia_cerrada = create_incident(
+        app,
+        ana_id,
+        "Incidencia cerrada",
+    )
+
+    with app.app_context():
+        db.session.get(
+            Incidencia,
+            incidencia_proceso,
+        ).estado = "en_proceso"
+
+        db.session.get(
+            Incidencia,
+            incidencia_resuelta,
+        ).estado = "resuelta"
+
+        db.session.get(
+            Incidencia,
+            incidencia_cerrada,
+        ).estado = "cerrada"
+
+        db.session.commit()
+
+    client = app.test_client()
+    login(client, "admin@example.com")
+
+    response = client.get("/administracion")
+
+    assert response.status_code == 200
+    assert b"Total de incidencias" in response.data
+
+    assert b"Incidencia abierta" in response.data
+    assert b"Incidencia en proceso" in response.data
+    assert b"Incidencia resuelta" in response.data
+    assert b"Incidencia cerrada" in response.data
+
+    assert b">4<" in response.data
+    assert b">1<" in response.data

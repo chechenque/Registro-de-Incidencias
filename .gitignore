@@ -30,3 +30,7 @@ dist/
 
 # PyInstaller
 *.spec
+# Local databases
+src/instance/*.db
+src/instance/*.sqlite
+src/instance/*.sqlite3

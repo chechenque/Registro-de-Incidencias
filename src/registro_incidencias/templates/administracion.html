@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+
+{% block title %}Administración | Registro de incidencias{% endblock %}
+
+{% block content %}
+<section class="container">
+    <h1>Panel de administración</h1>
+
+    <p>Resumen general de las incidencias registradas en el sistema.</p>
+
+    <section class="resumen-incidencias">
+        <article>
+            <h2>{{ resumen.total }}</h2>
+            <p>Total de incidencias</p>
+        </article>
+
+        <article>
+            <h2>{{ resumen.abiertas }}</h2>
+            <p>Abiertas</p>
+        </article>
+
+        <article>
+            <h2>{{ resumen.en_proceso }}</h2>
+            <p>En proceso</p>
+        </article>
+
+        <article>
+            <h2>{{ resumen.resueltas }}</h2>
+            <p>Resueltas</p>
+        </article>
+
+        <article>
+            <h2>{{ resumen.cerradas }}</h2>
+            <p>Cerradas</p>
+        </article>
+    </section>
+
+    <h2>Todas las incidencias</h2>
+
+    {% if incidencias %}
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Título</th>
+                    <th>Reportante</th>
+                    <th>Prioridad</th>
+                    <th>Estado</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for incidencia in incidencias %}
+                    <tr>
+                        <td>{{ incidencia.id }}</td>
+                        <td>{{ incidencia.titulo }}</td>
+                        <td>{{ incidencia.reportante.nombre }}</td>
+                        <td>{{ incidencia.prioridad }}</td>
+                        <td>{{ incidencia.estado }}</td>
+                        <td>
+                            <a href="{{ url_for(
+                                'main.detalle_incidencia',
+                                incidencia_id=incidencia.id
+                            ) }}">
+                                Consultar
+                            </a>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>No existen incidencias registradas.</p>
+    {% endif %}
+</section>
+{% endblock %}
