@@ -1,13 +1,12 @@
 from flask import (
     Blueprint,
+    abort,
     flash,
     redirect,
     render_template,
     request,
     url_for,
 )
-from flask import abort
-from flask_login import current_user, login_required
 from flask_login import (
     current_user,
     login_required,
@@ -15,6 +14,7 @@ from flask_login import (
     logout_user,
 )
 from sqlalchemy import select
+from sqlalchemy.orm import selectinload
 
 from registro_incidencias.extensions import db
 from registro_incidencias.forms import (
@@ -104,8 +104,10 @@ def logout():
 @main.get("/incidencias")
 @login_required
 def listar_incidencias():
-    consulta = select(Incidencia).order_by(
-        Incidencia.fecha_actualizacion.desc()
+    consulta = (
+        select(Incidencia)
+        .options(selectinload(Incidencia.reportante))
+        .order_by(Incidencia.fecha_actualizacion.desc())
     )
 
     if not current_user.es_administrador():
@@ -147,7 +149,15 @@ def nueva_incidencia():
 
 
 def obtener_incidencia_autorizada(incidencia_id: int) -> Incidencia:
-    incidencia = db.session.get(Incidencia, incidencia_id)
+    consulta = (
+        select(Incidencia)
+        .where(Incidencia.id == incidencia_id)
+        .options(
+            selectinload(Incidencia.reportante),
+            selectinload(Incidencia.comentarios).selectinload(Comentario.autor),
+        )
+    )
+    incidencia = db.session.scalar(consulta)
 
     if incidencia is None:
         abort(404)
@@ -198,6 +208,7 @@ def detalle_incidencia(incidencia_id: int):
         estado_form=estado_form,
     )
 
+
 @main.post("/incidencias/<int:incidencia_id>/estado")
 @login_required
 def actualizar_estado_incidencia(incidencia_id: int):
@@ -225,6 +236,7 @@ def actualizar_estado_incidencia(incidencia_id: int):
         url_for("main.detalle_incidencia", incidencia_id=incidencia.id)
     )
 
+
 @main.route("/administracion")
 @login_required
 def panel_administracion():
@@ -233,11 +245,12 @@ def panel_administracion():
     if not current_user.es_administrador():
         abort(403)
 
-    incidencias = (
-        Incidencia.query
+    consulta = (
+        select(Incidencia)
+        .options(selectinload(Incidencia.reportante))
         .order_by(Incidencia.fecha_creacion.desc())
-        .all()
     )
+    incidencias = db.session.scalars(consulta).all()
 
     resumen = {
         "total": len(incidencias),

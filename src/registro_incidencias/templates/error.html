@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+
+{% block title %}Error {{ codigo }} | Registro de incidencias{% endblock %}
+
+{% block content %}
+<section class="hero">
+    <p class="eyebrow">Error {{ codigo }}</p>
+    <h1>{{ titulo }}</h1>
+    <p>{{ mensaje }}</p>
+    <p>
+        <a class="button" href="{{ url_for('main.index') }}">Volver al inicio</a>
+    </p>
+</section>
+{% endblock %}
